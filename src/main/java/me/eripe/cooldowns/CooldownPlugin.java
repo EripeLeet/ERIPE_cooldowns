@@ -9,6 +9,7 @@ import me.eripe.cooldowns.data.CooldownManager;
 import me.eripe.cooldowns.listeners.BlockPlaceListener;
 import me.eripe.cooldowns.listeners.EntityDamageByEntityListener;
 import me.eripe.cooldowns.listeners.PlayerItemConsumeListener;
+import me.eripe.cooldowns.listeners.ProjectileLaunchListener;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,7 +26,7 @@ public class CooldownPlugin extends JavaPlugin {
         (new BundleStorage()).registerYamls(new ConfigYaml(this, "config.yml"));
         (new CooldownManager()).load();
         (new CommandManager()).registerCommands(new CooldownCommand());
-        registerListeners(new BlockPlaceListener(), new EntityDamageByEntityListener(), new PlayerItemConsumeListener());
+        registerListeners(new BlockPlaceListener(), new EntityDamageByEntityListener(), new PlayerItemConsumeListener(), new ProjectileLaunchListener());
     }
 
     public void registerListener(Listener listener){
