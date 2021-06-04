@@ -1,32 +1,33 @@
-package me.eripe.cooldowns.commands.implementations;
+package me.eripe.cooldowns.commands;
 
-import me.eripe.cooldowns.bundle.BundleStorage;
-import me.eripe.cooldowns.commands.Command;
-import me.eripe.cooldowns.data.CooldownManager;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
+import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
 
-public class CooldownCommand extends Command {
+import java.lang.reflect.Field;
+import java.util.Arrays;
 
-    public CooldownCommand() {
-        super("cooldown");
-        makeUp("Reload plugin configuration file!", "/cooldown reload", new String[0]);
+public class CommandManager {
+
+    @Getter private CommandMap commandMap;
+
+    public CommandManager(){
+        try {
+            Field field = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            field.setAccessible(true);
+            commandMap = (CommandMap) field.get(Bukkit.getServer());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public boolean onCommand(CommandSender commandSender, String[] args) {
-        if(args.length == 0){
-            commandSender.sendMessage(ChatColor.RED + "To reload the file, enter: /cooldown reload");
-            return false;
-        }
-        if(args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")){
-            BundleStorage.getBunlde("config.yml").reloadData();
-            CooldownManager.getCOOLDOWNS().clear();
-            (new CooldownManager()).load();
-            commandSender.sendMessage(ChatColor.GREEN + "The file and manager has been reloaded!");
-            return true;
-        }
-        commandSender.sendMessage(ChatColor.RED + "To reload the file, enter: /cooldown reload");
-        return false;
+    public void registerCommand(Command command){
+        getCommandMap().register("eripe", command);
     }
+
+    public void registerCommands(Command... commands){
+        Arrays.asList(commands).forEach(this::registerCommand);
+    }
+
 }
