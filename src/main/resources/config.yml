@@ -1,0 +1,25 @@
+# Use materials from org.bukkit.Material
+# Time: 20 ticks = 1 second. If you give a time e.g. 30 it will be a cooldown of 1.5 seconds.
+# Set type: BLOCK_PLACE, CONSUME, DAMAGE_GIVEN, DAMAGE_RECEIVED.
+
+cooldowns:
+  1:
+    material: ENDER_PEARL
+    time: 200
+    set:
+      - CONSUME
+  2:
+    material: SHIELD
+    time: 60
+    set:
+      - DAMAGE_RECEIVED
+  3:
+    material: BEDROCK
+    time: 60
+    set:
+      - BLOCK_PLACE
+  4:
+    material: DIAMOND_AXE
+    time: 30
+    set:
+      - DAMAGE_GIVEN
