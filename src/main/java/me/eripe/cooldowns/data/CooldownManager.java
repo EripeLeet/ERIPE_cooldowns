@@ -1,87 +1,32 @@
-package me.eripe.cooldowns.data;
+package me.eripe.cooldowns.commands.implementations;
 
-import lombok.Getter;
-import me.eripe.cooldowns.CooldownPlugin;
 import me.eripe.cooldowns.bundle.BundleStorage;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import me.eripe.cooldowns.commands.Command;
+import me.eripe.cooldowns.data.CooldownManager;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 
-import java.util.*;
+public class CooldownCommand extends Command {
 
-public class CooldownManager {
-
-    @Getter private static Map<Material, Cooldown> COOLDOWNS = new HashMap<>();
-
-    public static void createCooldown(Cooldown cooldown){
-        getCOOLDOWNS().put(cooldown.getMaterial(), cooldown);
+    public CooldownCommand() {
+        super("cooldown");
+        makeUp("Reload plugin configuration file!", "/cooldown reload", new String[0]);
     }
 
-    public static Cooldown getCooldown(Material material){
-        if(getCOOLDOWNS().containsKey(material)){
-            return getCOOLDOWNS().get(material);
+    @Override
+    public boolean onCommand(CommandSender commandSender, String[] args) {
+        if(args.length == 0){
+            commandSender.sendMessage(ChatColor.RED + "To reload the file, enter: /cooldown reload");
+            return false;
         }
-        return null;
-    }
-
-    public void load(){
-        FileConfiguration config = BundleStorage.getBunlde("config.yml").getConfig();
-        for(String id : config.getConfigurationSection("cooldowns").getKeys(false)) {
-            Material material = Material.getMaterial(Objects.requireNonNull(config.getString("cooldowns." + id + ".material")));
-            int time = config.getInt("cooldowns." + id + ".time");
-            Set<CooldownType> set = new HashSet<>();
-            for (String type : config.getStringList("cooldowns." + id + ".set")) {
-                CooldownType cooldownType = CooldownType.fromString(type);
-                if (cooldownType != null) {
-                    set.add(cooldownType);
-                }
-            }
-            createCooldown(new Cooldown(id, material, time, set));
+        if(args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")){
+            BundleStorage.getBunlde("config.yml").reloadData();
+            CooldownManager.getCOOLDOWNS().clear();
+            (new CooldownManager()).load();
+            commandSender.sendMessage(ChatColor.GREEN + "The file and manager has been reloaded!");
+            return true;
         }
-    }
-
-    public static void apply(Player player, Material material, CooldownType... cooldownTypes){
-        if(material == null || material.equals(Material.AIR)) return;
-        Cooldown cooldown = CooldownManager.getCooldown(material);
-        if(cooldown == null) return;
-        if(cooldown.getCooldownTypes().isEmpty()) return;
-        if(Arrays.asList(cooldownTypes).containsAll(cooldown.getCooldownTypes())){
-            cooldown.apply(player);
-            if(material.equals(Material.SHIELD)){
-                ItemStack main = null;
-                ItemStack off = null;
-                if(player.getInventory().getItemInMainHand().getType().equals(Material.SHIELD)){
-                    main = player.getInventory().getItemInMainHand().clone();
-                    player.getInventory().setItemInMainHand(null);
-                }
-                if(player.getInventory().getItemInOffHand().getType().equals(Material.SHIELD)){
-                    off = player.getInventory().getItemInOffHand().clone();
-                    player.getInventory().setItemInOffHand(null);
-                }
-                ItemStack finalMain = main;
-                ItemStack finalOff = off;
-                new BukkitRunnable() {
-                    UUID uuid = player.getUniqueId();
-                    @Override
-                    public void run() {
-                        Player p = Bukkit.getPlayer(uuid);
-                        if(p == null){
-                            cancel();
-                            return;
-                        }
-                        if(finalMain != null){
-                            p.getInventory().setItemInMainHand(finalMain);
-                        }
-                        if(finalOff != null){
-                            p.getInventory().setItemInOffHand(finalOff);
-                        }
-                        cancel();
-                    }
-                }.runTaskLater(CooldownPlugin.getCooldownPlugin(), 1L);
-            }
-        }
+        commandSender.sendMessage(ChatColor.RED + "To reload the file, enter: /cooldown reload");
+        return false;
     }
 }
